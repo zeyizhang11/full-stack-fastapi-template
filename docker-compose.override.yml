@@ -55,12 +55,35 @@ services:
     ports:
       - "8080:8080"
 
+  # 添加 prestart 配置
+  prestart:
+    image: ${DOCKER_IMAGE_BACKEND}:${TAG}
+    restart: "no"
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env  # 添加这行确保读取环境变量
+    environment:
+      SMTP_HOST: "mailcatcher"
+      SMTP_PORT: "1025"
+      SMTP_TLS: "false"
+      EMAILS_FROM_EMAIL: "noreply@example.com"
+      # 明确指定数据库连接信息
+      POSTGRES_SERVER: "db"
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: "board_repair_db"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "shanghaiguifahexin"
+
   backend:
+    image: ${DOCKER_IMAGE_BACKEND}:${TAG}
     restart: "no"
     ports:
       - "8000:8000"
     build:
       context: ./backend
+      dockerfile: Dockerfile
     # command: sleep infinity  # Infinite loop to keep container alive doing nothing
     command:
       - fastapi
@@ -93,16 +116,19 @@ services:
       - "1025:1025"
 
   frontend:
+    image: ${DOCKER_IMAGE_FRONTEND}:${TAG}
     restart: "no"
     ports:
       - "5173:80"
     build:
       context: ./frontend
+      dockerfile: Dockerfile
       args:
         - VITE_API_URL=http://localhost:8000
         - NODE_ENV=development
 
   playwright:
+    profiles: ["e2e"]
     build:
       context: ./frontend
       dockerfile: Dockerfile.playwright
