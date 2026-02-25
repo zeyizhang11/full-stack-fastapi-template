@@ -1,6 +1,10 @@
 import uuid
+from datetime import datetime, timezone
+from typing import Any
 
 from pydantic import EmailStr
+from sqlalchemy import JSON as SAJSON
+from sqlalchemy import Column
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -44,6 +48,7 @@ class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    readings: list["HexagramReading"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
@@ -111,3 +116,44 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=40)
+
+
+# ---- Liu Yao (六爻) Hexagram Reading models ----
+
+class HexagramReadingCreate(SQLModel):
+    question: str | None = Field(default=None, max_length=500)
+
+
+class HexagramReadingPublic(SQLModel):
+    id: uuid.UUID
+    reading_number: str
+    question: str | None
+    lines: list[int]
+    hexagram_number: int
+    hexagram_name: str
+    hexagram_english: str
+    hexagram_judgment: str
+    changed_hexagram_number: int | None
+    changed_hexagram_name: str | None
+    changing_lines: list[int]
+    created_at: datetime
+    user_id: uuid.UUID | None
+
+
+class HexagramReadingsPublic(SQLModel):
+    data: list[HexagramReadingPublic]
+    count: int
+
+
+class HexagramReading(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    reading_number: str = Field(index=True, max_length=20)
+    question: str | None = Field(default=None, max_length=500)
+    lines: Any = Field(default=None, sa_column=Column(SAJSON, nullable=False))
+    hexagram_number: int
+    changed_hexagram_number: int | None = Field(default=None, nullable=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    user_id: uuid.UUID | None = Field(
+        default=None, foreign_key="user.id", nullable=True
+    )
+    owner: "User | None" = Relationship(back_populates="readings")
