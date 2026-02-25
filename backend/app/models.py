@@ -1,6 +1,8 @@
 import uuid
+from datetime import datetime
 
 from pydantic import EmailStr
+from sqlalchemy import Column, JSON
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -44,6 +46,7 @@ class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    hexagram_readings: list["HexagramReading"] = Relationship(back_populates="owner")
 
 
 # Properties to return via API, id is always required
@@ -111,3 +114,39 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=40)
+
+
+# ── Liu Yao (六爻) models ──────────────────────────────────────────────────────
+
+class HexagramReadingCreate(SQLModel):
+    question: str | None = Field(default=None, max_length=500)
+
+
+class HexagramReading(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    reading_number: str = Field(unique=True, index=True, max_length=20)
+    question: str | None = Field(default=None, max_length=500)
+    lines: list[int] = Field(default_factory=list, sa_column=Column(JSON))
+    hexagram_number: int
+    changed_hexagram_number: int | None = Field(default=None)
+    created_at: datetime = Field(default_factory=lambda: datetime.utcnow())
+    user_id: uuid.UUID | None = Field(
+        default=None, foreign_key="user.id", nullable=True, ondelete="SET NULL"
+    )
+    owner: "User | None" = Relationship(back_populates="hexagram_readings")
+
+
+class HexagramReadingPublic(SQLModel):
+    id: uuid.UUID
+    reading_number: str
+    question: str | None
+    lines: list[int]
+    hexagram_number: int
+    changed_hexagram_number: int | None
+    created_at: datetime
+    user_id: uuid.UUID | None
+
+
+class HexagramReadingsPublic(SQLModel):
+    data: list[HexagramReadingPublic]
+    count: int
