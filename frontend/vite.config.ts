@@ -11,4 +11,11 @@ export default defineConfig({
     },
   },
   plugins: [react(), TanStackRouterVite()],
+  server: {
+    // Windows + Docker 下文件系统事件无法透传，需开启轮询才能热更新
+    watch: {
+      usePolling: true,
+      interval: 500,
+    },
+  },
 })
