@@ -1,0 +1,83 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "items": "Items",
+    "liuyao": "Liu Yao Divination",
+    "admin": "Admin",
+    "settings": "User Settings"
+  },
+  "auth": {
+    "login": "Log In",
+    "logout": "Log Out",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account? Log in"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "loading": "Loading...",
+    "confirm": "Confirm",
+    "back": "Back",
+    "home": "Home",
+    "language": "Language"
+  },
+  "liuyao": {
+    "title": "Liu Yao Divination",
+    "subtitle": "Supports four casting methods. No login required to cast; login to save history.",
+    "coinMethod": "Three-Coin Method",
+    "timeMethod": "Time-Based",
+    "numbersMethod": "Number-Based",
+    "manualMethod": "Manual Input",
+    "cast": "Cast",
+    "submit": "Submit",
+    "reset": "Reset",
+    "history": "My History",
+    "noHistory": "No records yet",
+    "question": "Question (optional)",
+    "name": "Name (optional)",
+    "gender": "Gender (optional)",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "delete": "Delete",
+    "loginPrompt": "Login to save your divination history.",
+    "returnHome": "Return Home"
+  },
+  "settings": {
+    "title": "User Settings",
+    "profile": "My profile",
+    "password": "Password",
+    "appearance": "Appearance",
+    "notifications": "Notifications",
+    "dangerZone": "Danger zone",
+    "fullName": "Full Name",
+    "email": "Email",
+    "updateProfile": "Save",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "updatePassword": "Update Password"
+  },
+  "admin": {
+    "users": "Users",
+    "addUser": "Add User",
+    "editUser": "Edit User",
+    "deleteUser": "Delete User",
+    "confirmDelete": "All items associated with this user will also be permanently deleted. Are you sure? You will not be able to undo this action.",
+    "superuser": "Superuser",
+    "active": "Active"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  }
+}

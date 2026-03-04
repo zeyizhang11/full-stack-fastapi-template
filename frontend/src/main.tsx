@@ -10,6 +10,7 @@ import ReactDOM from "react-dom/client"
 import { routeTree } from "./routeTree.gen"
 
 import { ApiError, OpenAPI } from "./client"
+import "./i18n"   // 初始化多语言，必须在渲染前导入
 import { CustomProvider } from "./components/ui/provider"
 
 OpenAPI.BASE = import.meta.env.VITE_API_URL

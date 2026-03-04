@@ -26,8 +26,8 @@ def upgrade():
         sa.Column("hexagram_number", sa.Integer(), nullable=False),
         sa.Column("changed_hexagram_number", sa.Integer(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.Column("user_id", sa.UUID(), nullable=True),
-        sa.ForeignKeyConstraint(["user_id"], ["user.id"], ondelete="SET NULL"),
+        sa.Column("owner_id", sa.UUID(), nullable=True),
+        sa.ForeignKeyConstraint(["owner_id"], ["user.id"], ondelete="SET NULL"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(

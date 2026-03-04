@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from pydantic import EmailStr
 from sqlalchemy import Column, JSON
@@ -118,35 +119,115 @@ class NewPassword(SQLModel):
 
 # ── Liu Yao (六爻) models ──────────────────────────────────────────────────────
 
+class CastMethod(str):
+    COIN = "coin"       # 三铜钱法（随机）
+    TIME = "time"       # 时间起卦
+    NUMBERS = "numbers" # 报数起卦
+    MANUAL = "manual"   # 手动指定六爻
+
+
 class HexagramReadingCreate(SQLModel):
+    """三铜钱法起卦（默认）"""
     question: str | None = Field(default=None, max_length=500)
+    caster_name: str | None = Field(default=None, max_length=100)
+    caster_gender: str | None = Field(default=None, max_length=10)
+
+
+class CastByTimeRequest(SQLModel):
+    """时间起卦"""
+    year: int = Field(ge=1900, le=2100)
+    month: int = Field(ge=1, le=12)
+    day: int = Field(ge=1, le=31)
+    hour: int = Field(ge=0, le=23)
+    question: str | None = Field(default=None, max_length=500)
+    caster_name: str | None = Field(default=None, max_length=100)
+    caster_gender: str | None = Field(default=None, max_length=10)
+
+
+class CastByNumbersRequest(SQLModel):
+    """报数起卦：用户随机说三个数（上卦数、下卦数、动爻数）"""
+    upper_num: int = Field(ge=1)
+    lower_num: int = Field(ge=1)
+    changing_num: int = Field(ge=1)
+    question: str | None = Field(default=None, max_length=500)
+    caster_name: str | None = Field(default=None, max_length=100)
+    caster_gender: str | None = Field(default=None, max_length=10)
+
+
+class CastByManualRequest(SQLModel):
+    """手动指定六爻（每爻：6=老阴, 7=少阳, 8=少阴, 9=老阳）"""
+    lines: list[int] = Field(min_length=6, max_length=6)
+    question: str | None = Field(default=None, max_length=500)
+    caster_name: str | None = Field(default=None, max_length=100)
+    caster_gender: str | None = Field(default=None, max_length=10)
 
 
 class HexagramReading(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     reading_number: str = Field(unique=True, index=True, max_length=20)
+    cast_method: str = Field(default="coin", max_length=20)
     question: str | None = Field(default=None, max_length=500)
+    caster_name: str | None = Field(default=None, max_length=100)
+    caster_gender: str | None = Field(default=None, max_length=10)
     lines: list[int] = Field(default_factory=list, sa_column=Column(JSON))
     hexagram_number: int
-    changed_hexagram_number: int | None = Field(default=None)
+    changed_hexagram_number: Optional[int] = Field(default=None)
     created_at: datetime = Field(default_factory=lambda: datetime.utcnow())
-    user_id: uuid.UUID | None = Field(
+    owner_id: Optional[uuid.UUID] = Field(
         default=None, foreign_key="user.id", nullable=True, ondelete="SET NULL"
     )
-    owner: "User | None" = Relationship(back_populates="hexagram_readings")
+    owner: Optional["User"] = Relationship(back_populates="hexagram_readings")
 
 
 class HexagramReadingPublic(SQLModel):
     id: uuid.UUID
     reading_number: str
+    cast_method: str
     question: str | None
+    caster_name: str | None
+    caster_gender: str | None
     lines: list[int]
     hexagram_number: int
     changed_hexagram_number: int | None
     created_at: datetime
-    user_id: uuid.UUID | None
+    owner_id: uuid.UUID | None
+
+
+class GanzhiInfo(SQLModel):
+    solar: str
+    year_gz: str
+    month_gz: str
+    day_gz: str
+    hour_gz: str
+    xunkong: list[str]
+
+
+class YaoInfo(SQLModel):
+    liuqin: str       # 六亲：父母/兄弟/妻财/子孙/官鬼
+    najia: str        # 纳甲：如 甲子、壬午
+    element: str      # 五行：金木水火土
+    liushen: str      # 六神：青龙/朱雀/勾陈/腾蛇/白虎/玄武
+    is_shi: bool      # 是否世爻
+    is_ying: bool     # 是否应爻
+    is_xunkong: bool  # 是否旬空
+    fuxin: dict | None = None  # 伏神 {"ganzhi": ..., "liuqin": ...}
+
+
+class HexagramReadingDetail(HexagramReadingPublic):
+    """扩展版响应：含干支批注、六神、纳甲、六亲、世应爻、伏神。"""
+    ganzhi_info: GanzhiInfo | None = None
+    palace: str | None = None
+    palace_element: str | None = None
+    shi_yao: int | None = None
+    ying_yao: int | None = None
+    yao_info: list[YaoInfo] | None = None  # 6 items, index 0 = 第一爻
+    # 变卦批注
+    changed_palace: str | None = None
+    changed_shi_yao: int | None = None
+    changed_ying_yao: int | None = None
+    changed_yao_info: list[YaoInfo] | None = None
 
 
 class HexagramReadingsPublic(SQLModel):
-    data: list[HexagramReadingPublic]
+    data: list[HexagramReadingDetail]
     count: int
